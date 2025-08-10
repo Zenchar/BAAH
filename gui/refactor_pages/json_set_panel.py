@@ -30,8 +30,6 @@ from ..define import gui_shared_config, injectJSforTabs
 
 from nicegui import ui, app, run
 from typing import Callable
-import os
-import time
 
 
 class ConfigPanel:
@@ -133,13 +131,22 @@ def show_json_panel(json_file_name: str):
             ui.button(curr_config.get_text("button_save"), on_click=save_and_alert)
 
             def save_and_alert_and_run_in_terminal():
+                import subprocess,sys
                 curr_config.save_user_config(json_file_name)
                 curr_config.save_software_config()
                 gui_shared_config.save_software_config()
                 ui.notify(curr_config.get_text("notice_save_success"))
                 ui.notify(curr_config.get_text("notice_start_run"))
-                # 打开同目录中的BAAH.exe，传入当前config的json文件名
-                os.system(f'start BAAH.exe "{json_file_name}"')
+                if getattr(sys, 'frozen', False):
+                    # 若为打包环境，打开同目录中的BAAH.exe，传入当前config的json文件名
+                    subprocess.Popen(['start','BAAH.exe', json_file_name], shell=True)
+                else:
+                    # 开发环境使用main.py
+                    if sys.platform == "win32":
+                        # 尽量在新终端窗口运行
+                        subprocess.Popen([sys.executable, 'main.py', json_file_name], creationflags=subprocess.CREATE_NEW_CONSOLE)
+                    else:
+                        subprocess.Popen([sys.executable, 'main.py', json_file_name])
 
             ui.button(curr_config.get_text("button_save_and_run_terminal"), on_click=save_and_alert_and_run_in_terminal)
 
