@@ -139,12 +139,14 @@ def show_json_panel(json_file_name: str):
                 ui.notify(curr_config.get_text("notice_start_run"))
                 if getattr(sys, 'frozen', False):
                     # 若为打包环境，打开同目录中的BAAH.exe，传入当前config的json文件名
-                    subprocess.Popen(['start','BAAH.exe', json_file_name], shell=True)
+                    subprocess.Popen(['BAAH.exe', json_file_name], creationflags=subprocess.CREATE_NEW_CONSOLE)
                 else:
                     # 开发环境使用main.py
                     if sys.platform == "win32":
                         # 尽量在新终端窗口运行
                         subprocess.Popen([sys.executable, 'main.py', json_file_name], creationflags=subprocess.CREATE_NEW_CONSOLE)
+                    elif sys.platform == "darwin":
+                        subprocess.Popen(['open', '-a', 'Terminal', '--args', sys.executable, 'main.py', json_file_name])
                     else:
                         subprocess.Popen([sys.executable, 'main.py', json_file_name])
 
